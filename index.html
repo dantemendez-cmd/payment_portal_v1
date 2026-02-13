@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evergreen Credit Union | Recovery Payment Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="bg-blur bg-blur-a"></div>
+  <div class="bg-blur bg-blur-b"></div>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <main id="app-shell">
+    <section id="login-view" class="view active">
+      <article class="hero-panel">
+        <p class="eyebrow">Member Self-Service</p>
+        <h1>Recovery Payment Center</h1>
+        <p>
+          Manage your outstanding balance with flexible options and clear account visibility.
+          The flow is designed for clarity and low-stress self-service.
+        </p>
+        <ul>
+          <li>View your full balance breakdown and original due dates</li>
+          <li>Complete payments with fast feedback and security cues</li>
+          <li>Use hardship pathways when full payment is not possible</li>
+        </ul>
+      </article>
+
+      <article class="auth-panel">
+        <h2>Secure Sign In</h2>
+        <p class="muted">Demo login: any username/password, then MFA code <code>123456</code>.</p>
+
+        <form id="login-form" class="stack-gap">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" required>
+
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+          <button type="submit" class="button">Continue</button>
+        </form>
+
+        <form id="mfa-form" class="stack-gap hidden" aria-live="polite">
+          <label for="mfa-code">Multi-factor verification code</label>
+          <input id="mfa-code" name="mfa-code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required>
+          <button type="submit" class="button">Verify &amp; Enter</button>
+        </form>
+      </article>
+    </section>
+
+    <section id="portal-view" class="view hidden">
+      <header class="portal-header">
+        <div>
+          <p class="eyebrow">Post-Charge-Off Support</p>
+          <h1>Member Account Center</h1>
+          <p id="member-meta" class="muted"></p>
+        </div>
+        <div class="header-actions">
+          <span id="account-status-pill" class="status-pill"></span>
+          <button id="reset-demo-btn" type="button" class="button ghost">Reset Demo Account</button>
+          <button id="sign-out-btn" type="button" class="button ghost">Sign Out</button>
+        </div>
+      </header>
+
+      <div id="smart-link-banner" class="smart-banner hidden"></div>
+
+      <nav class="portal-nav" aria-label="Member sections">
+        <button class="nav-btn active" type="button" data-panel="dashboard-panel" aria-controls="dashboard-panel">Dashboard</button>
+        <button class="nav-btn" type="button" data-panel="payments-panel" aria-controls="payments-panel">Payments</button>
+        <button id="admin-tab-btn" class="nav-btn hidden" type="button" data-panel="admin-panel" aria-controls="admin-panel" aria-hidden="true">Admin</button>
+      </nav>
+
+      <section id="dashboard-panel" class="panel active" role="region" aria-label="Dashboard">
+        <article class="balance-hero">
+          <p class="eyebrow">Account Snapshot</p>
+          <p class="balance-label">Outstanding Balance</p>
+          <h2 id="balance-value" class="balance-emphasis">$0.00</h2>
+          <p id="balance-cue" class="muted">Balance updates after validated account events and submissions.</p>
+          <p id="snapshot-freeze-note" class="status-note hidden" aria-live="polite"></p>
+        </article>
+
+        <div class="card-grid">
+          <article class="metric-card">
+            <p>Principal</p>
+            <h2 id="principal-value">$0.00</h2>
+          </article>
+          <article class="metric-card">
+            <p>Interest</p>
+            <h2 id="interest-value">$0.00</h2>
+          </article>
+          <article class="metric-card">
+            <p>Fees</p>
+            <h2 id="fees-value">$0.00</h2>
+          </article>
+          <article class="metric-card">
+            <p>Original Due Date</p>
+            <h2 id="due-dates-value">-</h2>
+          </article>
+        </div>
+
+        <div class="split-grid">
+          <article class="panel-card">
+            <h2>Recent Activity</h2>
+            <ul id="activity-feed" class="activity-feed"></ul>
+          </article>
+
+          <article class="panel-card">
+            <h2>Contact Information</h2>
+            <div id="contact-info-block"></div>
+          </article>
+        </div>
+
+        <article class="panel-card">
+          <div class="table-header-row">
+            <h2>Itemized Statement</h2>
+            <button id="download-statement-btn" type="button" class="button ghost">Download Statement CSV</button>
+          </div>
+          <table class="data-table" id="statement-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Running Balance</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </article>
+      </section>
+
+      <section id="payments-panel" class="panel" role="region" aria-label="Payments">
+        <article class="panel-card">
+          <h2>Would you like to make a payment toward your outstanding balance today?</h2>
+          <p id="payments-balance-summary" class="muted"></p>
+          <p id="payments-locked-note" class="status-note hidden" aria-live="polite"></p>
+          <div class="decision-row">
+            <button id="decision-pay-btn" type="button" class="button decision-btn">Make a payment</button>
+            <button id="decision-unable-btn" type="button" class="button ghost decision-btn">Unable to make a payment in full</button>
+          </div>
+        </article>
+
+        <div id="make-payment-flow" class="split-grid hidden">
+          <article class="panel-card">
+            <h2>Payment Details</h2>
+            <p class="security-cue" aria-label="Security notice">Secured by 256-bit encryption. Your payment data is tokenized before authorization.</p>
+            <form id="payment-form" class="stack-gap" novalidate>
+              <label for="payment-amount">Payment Amount</label>
+              <input id="payment-amount" type="number" min="1" step="0.01" required readonly>
+
+              <label for="payment-method">Payment Method</label>
+              <select id="payment-method" required>
+                <option value="CREDIT_CARD">Credit Card</option>
+                <option value="DEBIT_CARD">Debit Card</option>
+                <option value="ACH_BANK">ACH / Bank Transfer</option>
+              </select>
+
+              <div id="card-fields" class="stack-gap">
+                <label for="card-number">Card Number</label>
+                <input id="card-number" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="4111 1111 1111 1111" maxlength="19">
+
+                <div class="split-grid mini-grid">
+                  <div class="stack-gap">
+                    <label for="card-expiry">Expiry (MM/YY)</label>
+                    <input id="card-expiry" type="text" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp">
+                  </div>
+                  <div class="stack-gap">
+                <label for="card-cvv">CVV</label>
+                    <input id="card-cvv" type="text" inputmode="numeric" autocomplete="cc-csc">
+                  </div>
+                </div>
+              </div>
+
+              <div id="ach-fields" class="stack-gap hidden">
+                <label for="routing-number">Routing Number</label>
+                <input id="routing-number" type="text" inputmode="numeric" placeholder="9-digit routing number" maxlength="9">
+
+                <label for="bank-account-last4">Bank Account Last 4</label>
+                <input id="bank-account-last4" type="text" inputmode="numeric" maxlength="4" placeholder="Last 4 digits">
+              </div>
+
+              <label for="payment-date">Payment Date</label>
+              <input id="payment-date" type="date" required>
+
+              <label class="checkbox">
+                <input id="enable-recurring" type="checkbox">
+                <span>Set as recurring/autodraft</span>
+              </label>
+              <p id="full-payment-note" class="muted hidden">Recurring is unavailable when paying the full outstanding balance.</p>
+
+              <div id="recurring-fields" class="stack-gap hidden">
+                <label for="recurring-frequency">Recurring Frequency</label>
+                <select id="recurring-frequency">
+                  <option value="WEEKLY">Weekly</option>
+                  <option value="BIWEEKLY">Biweekly</option>
+                  <option value="MONTHLY">Monthly</option>
+                </select>
+              </div>
+
+              <label class="checkbox">
+                <input id="payment-disclosure" type="checkbox" required>
+                <span>I acknowledge required disclosures and authorize this payment submission.</span>
+              </label>
+
+              <button type="submit" class="button">Submit Payment</button>
+            </form>
+            <p id="payment-status" class="status-note" aria-live="polite"></p>
+            <button id="download-payment-receipt-btn" type="button" class="button ghost hidden">Download Payment Receipt (.txt)</button>
+          </article>
+
+          <article class="panel-card">
+            <h2>Processor Flow Preview</h2>
+            <pre id="processor-preview" class="code-block"></pre>
+          </article>
+        </div>
+
+        <div id="hardship-flow" class="panel-card hidden">
+          <h2>Unable to Make Full Payment</h2>
+          <p class="muted">Select an option below. We will guide you through the next step without leaving this page.</p>
+
+          <label for="hardship-path">Hardship Path</label>
+          <select id="hardship-path">
+            <option value="">Select an option</option>
+            <option value="BANKRUPTCY">Bankruptcy</option>
+            <option value="DISPUTE">Dispute</option>
+            <option value="OTHER_OPTIONS">Other Payment Options</option>
+          </select>
+
+          <div id="bankruptcy-panel" class="hardship-panel hidden">
+            <p>This has been noted. Please contact <a href="mailto:support@creditunion.com">support@creditunion.com</a> with relevant documentation or call <a href="tel:180012345678">1-800-123-45678</a>.</p>
+            <button id="submit-bankruptcy-btn" type="button" class="button top-gap">Submit Bankruptcy Notice</button>
+            <p id="bankruptcy-status" class="status-note" aria-live="polite"></p>
+          </div>
+
+          <div id="dispute-panel" class="hardship-panel hidden stack-gap">
+            <label for="dispute-type">Dispute Type</label>
+            <select id="dispute-type">
+              <option value="FULL">Dispute full balance</option>
+              <option value="PARTIAL">Dispute partial balance</option>
+            </select>
+
+            <p id="dispute-full-note" class="muted">Please complete the dispute form here and send to <a href="mailto:dispute@creditunion.com">dispute@creditunion.com</a>.</p>
+
+            <div id="partial-dispute-fields" class="stack-gap hidden">
+              <label for="dispute-amount">Partial Dispute Amount</label>
+              <input id="dispute-amount" type="number" min="1" step="0.01">
+
+              <label for="dispute-reason">Reason</label>
+              <textarea id="dispute-reason" rows="3" placeholder="Please describe the disputed amount."></textarea>
+            </div>
+
+            <button id="submit-dispute-btn" type="button" class="button">Submit Dispute</button>
+            <p id="dispute-status" class="status-note" aria-live="polite"></p>
+          </div>
+
+          <div id="other-options-panel" class="hardship-panel hidden stack-gap">
+            <h3>Payment Plan Options</h3>
+            <label for="plan-term">Installment Term (Up to 6 months)</label>
+            <select id="plan-term">
+              <option value="2">2 months</option>
+              <option value="3">3 months</option>
+              <option value="4">4 months</option>
+              <option value="5">5 months</option>
+              <option value="6">6 months</option>
+            </select>
+
+            <label for="plan-monthly-amount">Monthly Amount</label>
+            <input id="plan-monthly-amount" type="number" min="1" step="0.01" readonly>
+
+            <label for="plan-start-date">Start Date</label>
+            <input id="plan-start-date" type="date">
+
+            <div id="plan-summary" class="offer-card"></div>
+            <button id="save-plan-btn" type="button" class="button">Review Plan Terms</button>
+            <p id="plan-status" class="status-note" aria-live="polite"></p>
+
+            <div id="plan-terms-box" class="hardship-panel hidden">
+              <p><strong>Terms and Conditions</strong></p>
+              <p class="muted">I understand and agree to the payment plan terms, including scheduled drafts and contact policies.</p>
+              <label class="checkbox">
+                <input id="plan-terms-agree" type="checkbox">
+                <span>I agree to the payment plan terms and conditions.</span>
+              </label>
+            </div>
+
+            <form id="plan-payment-form" class="stack-gap hidden" novalidate>
+              <label for="plan-payment-method">Plan Payment Method</label>
+              <select id="plan-payment-method">
+                <option value="DEBIT_CARD">Debit Card</option>
+                <option value="CREDIT_CARD">Credit Card</option>
+                <option value="ACH_BANK">ACH</option>
+              </select>
+
+              <label for="plan-payment-account">Account / Card</label>
+              <input id="plan-payment-account" type="text" value="4111 1111 1111 1111">
+
+              <label for="plan-payment-expiry">Expiry / Ref</label>
+              <input id="plan-payment-expiry" type="text" value="12/30">
+
+              <label for="plan-payment-cvv">CVV / Last4</label>
+              <input id="plan-payment-cvv" type="text" value="123">
+
+              <button id="submit-plan-payment-btn" type="submit" class="button">Submit Plan Payment</button>
+              <p id="plan-payment-status" class="status-note" aria-live="polite"></p>
+            </form>
+            <button id="download-plan-receipt-btn" type="button" class="button ghost hidden">Download Payment Plan Receipt (.txt)</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="admin-panel" class="panel" role="region" aria-label="Admin simulation">
+        <article class="panel-card admin-pill-note">
+          <p><strong>Admin Simulation:</strong> Internal-only controls for compliance, activity, offer history, and integration logs.</p>
+        </article>
+
+        <div class="split-grid">
+          <article class="panel-card">
+            <h2>Compliance &amp; Audit</h2>
+            <p class="muted">Reg F controls, disclosure tracking, and communication governance simulation.</p>
+            <ul id="disclosure-list" class="compliance-list"></ul>
+            <div class="button-row">
+              <button id="log-contact-attempt-btn" type="button" class="button secondary">Log Outbound Contact Attempt</button>
+              <button id="toggle-sms-consent-btn" type="button" class="button secondary">Toggle SMS Consent</button>
+            </div>
+            <p id="compliance-status" class="status-note"></p>
+          </article>
+
+          <article class="panel-card">
+            <h2>Offer History &amp; Rule Templates</h2>
+            <table class="data-table" id="offer-history-table">
+              <thead>
+                <tr>
+                  <th>Offer</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Approval</th>
+                  <th>Expires</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <pre class="code-block" id="rule-template-block"></pre>
+          </article>
+        </div>
+
+        <div class="split-grid">
+          <article class="panel-card">
+            <h2>Activity Log</h2>
+            <table class="data-table" id="activity-log-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Event</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </article>
+
+          <article class="panel-card">
+            <h2>Audit Trail</h2>
+            <table class="data-table" id="audit-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Actor</th>
+                  <th>Event</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </article>
+        </div>
+
+        <div class="split-grid">
+          <article class="panel-card">
+            <h2>Processor API Log</h2>
+            <table class="data-table" id="api-log-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Endpoint</th>
+                  <th>Status</th>
+                  <th>Summary</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </article>
+
+          <article class="panel-card">
+            <h2>Disposition Feed (Skit/BECU)</h2>
+            <table class="data-table" id="outcome-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Outcome</th>
+                  <th>Channel</th>
+                  <th>Reference</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </article>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="error-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="error-modal-title">
+    <div class="modal-card">
+      <h2 id="error-modal-title">Date Selection Error</h2>
+      <p id="error-modal-message">Please select a valid date.</p>
+      <button id="error-modal-close" type="button" class="button">Close</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
