@@ -4,20 +4,10 @@ Web demo implementing a member-facing self-service payment portal with a simplif
 
 ## Run
 
-1. Open `/Users/dantemendez/Documents/Codex Projects/cu-post-chargeoff-portal/index.html` in a browser.
+1. Open `index.html` in a browser.
 2. Sign in with any username/password.
 3. Enter MFA code `123456`.
 
-## Smart-Link Demo
-
-Use URL parameters to simulate cross-channel handoff from voice/SMS:
-
-`index.html?token=SL-a9k31&offerAmount=2376.19&channel=SMS&expires=2026-02-20T23:59:59.000Z`
-
-Behavior:
-- Valid smart links inject negotiated terms into the portal.
-- Payment amount auto-populates.
-- Outcome events are sent to the orchestration feed.
 
 ## Admin Simulation
 
